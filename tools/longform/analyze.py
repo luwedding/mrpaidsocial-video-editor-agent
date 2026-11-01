@@ -88,6 +88,8 @@ def decode_audio(path, info):
             block = np.frombuffer(data[:usable], dtype="<f4").reshape(-1, hop, channels)
             rows.append(np.sqrt(np.mean(block.astype(np.float64) ** 2, axis=1)))  # (frames, ch)
     err = proc.stderr.read().decode(errors="replace")
+    proc.stdout.close()
+    proc.stderr.close()
     if proc.wait():
         raise RuntimeError(f"ffmpeg audio decode failed: {err[-2000:]}")
     rms = np.concatenate(rows) if rows else np.zeros((0, channels))
@@ -195,6 +197,8 @@ def video_features(path, info, boxes):
                     box_motion[n].append(float(d[y0:y1, x0:x1].mean()))
             prev = f
     err = proc.stderr.read().decode(errors="replace")
+    proc.stdout.close()
+    proc.stderr.close()
     if proc.wait():
         raise RuntimeError(f"ffmpeg video decode failed: {err[-2000:]}")
     motion_arr = np.array(motion)
