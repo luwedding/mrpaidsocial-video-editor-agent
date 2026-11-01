@@ -13,6 +13,7 @@ this helper does not invent silence. Input sample rate may differ from output.
 """
 
 import argparse
+import functools
 import hashlib
 import json
 import math
@@ -37,6 +38,19 @@ def run(cmd):
     if result.returncode:
         raise CutError("Command failed: {}\n{}".format(cmd[0], result.stderr[-5000:]))
     return result
+
+
+@functools.lru_cache(maxsize=None)
+def _has_filter_script_option(ffmpeg):
+    """ffmpeg <= 7.x: -filter_complex_script FILE. ffmpeg 8 removed it for -/filter_complex FILE
+    (the -/ "read the value from a file" prefix exists since 7.0)."""
+    out = subprocess.run([str(ffmpeg), "-hide_banner", "-h", "long"], text=True, capture_output=True)
+    return "filter_complex_script" in (out.stdout + out.stderr)
+
+
+def filter_script_args(ffmpeg, path):
+    """The argv pair that loads a filtergraph from a file on THIS ffmpeg."""
+    return ["-filter_complex_script", str(path)] if _has_filter_script_option(ffmpeg) else ["-/filter_complex", str(path)]
 
 
 def binary(name, alternate):
@@ -279,7 +293,7 @@ def render(ffmpeg, ffprobe, source, outfile, work, spans, fps, sample_rate, crf,
     graph.write_text(";\n".join(parts) + "\n")
     pcm = work / "dialogue.wav"
     cmd = [ffmpeg, "-nostdin", "-hide_banner", "-loglevel", "error", "-n", *inputs,
-           "-filter_complex_script", str(graph), "-map", "[v]", "-map", "[a]",
+           *filter_script_args(ffmpeg, graph), "-map", "[v]", "-map", "[a]",
            "-c:v", "libx264", "-crf", str(crf), "-preset", preset, "-g", str(fps),
            "-keyint_min", str(fps), "-pix_fmt", "yuv420p", "-r", str(fps),
            "-video_track_timescale", str(fps * 1000), "-c:a", "aac", "-b:a", "192k",

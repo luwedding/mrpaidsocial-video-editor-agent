@@ -2,6 +2,7 @@
 """Bounded-memory frame/sample-grid cuts. Lossless chunks, one final AAC encode."""
 import argparse
 from fractions import Fraction
+import functools
 import json
 import math
 import os
@@ -20,6 +21,19 @@ def run(argv):
     if result.returncode:
         raise ValueError(f"{Path(str(argv[0])).name} failed: {result.stderr[-4000:]}")
     return result.stdout
+
+
+@functools.lru_cache(maxsize=None)
+def _has_filter_script_option(ffmpeg):
+    """ffmpeg <= 7.x: -filter_complex_script FILE. ffmpeg 8 removed it for -/filter_complex FILE
+    (the -/ "read the value from a file" prefix exists since 7.0)."""
+    out = subprocess.run([str(ffmpeg), "-hide_banner", "-h", "long"], text=True, capture_output=True)
+    return "filter_complex_script" in (out.stdout + out.stderr)
+
+
+def filter_script_args(ffmpeg, path):
+    """The argv pair that loads a filtergraph from a file on THIS ffmpeg."""
+    return ["-filter_complex_script", str(path)] if _has_filter_script_option(ffmpeg) else ["-/filter_complex", str(path)]
 
 
 def plan(keeps, fps=30, sample_rate=48000):
@@ -89,7 +103,7 @@ def render_base(source, output, work, keeps, fps=30, sample_rate=48000, crf=18,
         graph.write_text(";\n".join(filters))
         chunk = work / f"batch-{len(chunks):04}.mkv"
         run([ffmpeg, "-nostdin", "-v", "error", "-n", *inputs, "-filter_complex_threads", "1",
-             "-filter_complex_script", graph, "-map", "[v]", "-map", "[a]", "-c:v", "ffv1", "-threads", "1",
+             *filter_script_args(ffmpeg, graph), "-map", "[v]", "-map", "[a]", "-c:v", "ffv1", "-threads", "1",
              "-pix_fmt", "yuv420p", "-r", str(rate), "-c:a", "pcm_s16le", "-ar", sample_rate, chunk])
         chunks.append(chunk)
     # Relative generated filenames avoid quoting arbitrary source paths in concat syntax.
