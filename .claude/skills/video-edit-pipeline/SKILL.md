@@ -7,8 +7,10 @@ description: >
   including "edit this video", "edit this like the reference reel", "turn this
   clip into a finished reel", "do the full edit", "make this look like their
   winning ads", or a revision request on a previously delivered edit. It routes
-  every stage to the right specialist skill (reel-style-clone, branded-ad-edit,
+  every stage to the right specialist skill — including LONG recordings (podcasts,
+  interviews, YouTube episodes) and clipping shorts out of them — (reel-style-clone, branded-ad-edit,
   reel-recut, arcads-video-edit, recap-video, talking-head-image-overlays, hook-splitter, edits-hook-overlay,
+  long-form-edit, longform-to-shorts,
   sound-design, ai-audio-sound-design,
   video-qa, video-review-canvas, edl-tighten, hook-variations, naming-convention,
   capcut-export) and
@@ -92,6 +94,15 @@ the shared footage catalog. These receipts add no user approval gates.
      split/full layouts and revision-safe timing), then Stages 4–6. Its workflow
      owns the build and sound choices; do not also run branded-ad-edit or require
      new intermediate approvals when the user requested a finished first cut.
+   - a **long recording edited as a whole** (podcast, interview, video-podcast, tutorial,
+     minutes to hours, usually 16:9) → **long-form-edit** (one audio+picture analysis,
+     waveform-refined pause/hesitation/retake cuts, laughs protected, chapters, -14 LUFS),
+     then Stages 4-6. Default ratio for this lane is the SOURCE ratio, not 9:16.
+   - **shorts out of a long recording** ("find the best clips", "make 10 reels from this
+     episode") → **longform-to-shorts** (signal-ranked shortlist you judge by reading,
+     vertical reframe that follows the speaker or splits two, then reel-recut captions),
+     then Stages 4-6 per clip and naming-convention for the batch. Both together ("edit the
+     episode and cut shorts") share one analysis: run long-form-edit's analysis first.
    - **one long recording of many hooks/takes** → **hook-splitter**; an approved body
      that needs many openers → **hook-variations** (Stage 6b).
    - **AI-actor / generated footage that sounds sterile** → **ai-audio-sound-design**
@@ -296,6 +307,8 @@ draft opens before telling the user it is ready.
 | Multi-take screen + camera + mic demo → EDL base cut → motion-graphics pass | arcads-video-edit |
 | Event recap from spoken takes + supplied B-roll, split/full layouts and line-anchored revisions | recap-video |
 | One long recording of many hooks → one tightened video per hook (+ gallery canvas) | hook-splitter |
+| Long podcast / interview / episode → cleaned 16:9 master + chapters | long-form-edit |
+| Long recording → ranked moments → vertical shorts (speaker-follow / split) | longform-to-shorts |
 | Native Instagram (Edits) text hook typed once on the phone, lifted as a PNG and burned onto many videos | edits-hook-overlay |
 | AI-actor footage: ambience, room reverb, bleeps, watermark whine, loudness master | ai-audio-sound-design |
 | Uncut take + hard-cut image overlays on content nouns (title plate, inserts above the eyeline, skeleton-UI cards, early CTA banner) | talking-head-image-overlays |

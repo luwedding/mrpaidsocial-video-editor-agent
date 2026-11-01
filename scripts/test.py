@@ -20,6 +20,8 @@ def main():
     commands = [[sys.executable, "-m", "unittest", "discover", "-s", "scripts/tests", "-p", "test_*.py", "-v"]]
     if (ROOT / "tools/editor/tests").is_dir():
         commands.append([sys.executable, "-m", "unittest", "discover", "-s", "tools/editor/tests", "-p", "test_*.py", "-v"])
+    if (ROOT / "tools/longform/tests").is_dir():
+        commands.append([sys.executable, "-m", "unittest", "discover", "-s", "tools/longform/tests", "-p", "test_*.py", "-v"])
     canvas_tests = sorted((ROOT / ".claude/skills/video-review-canvas").glob("tests/*.test.mjs"))
     if canvas_tests and node_ready():
         commands.append(["node", "--test", *map(str, canvas_tests)])

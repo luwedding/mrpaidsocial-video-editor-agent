@@ -580,3 +580,29 @@ five skill validations. Rechecked whitespace and public-repository hygiene befor
 committing. Media, credentials, local review storage and personal configuration
 remain ignored. No architecture or implementation changes were needed for this
 publication step.
+
+## 2026-11-01 — Long-form lane + long-to-shorts lane
+
+Added two lanes for long recordings (podcast/interview first): `long-form-edit` (episode
+master) and `longform-to-shorts` (ranked moments → vertical shorts), backed by a new
+`tools/longform/` (analyze → plan → find clips → render). One analysis pass measures
+loudness with an adaptive gate, silences, nonverbal events (laughs/reactions), scene cuts,
+motion, and a speaker timeline from transcript labels, per-person mic channels or motion in
+speaker boxes. The planner auto-cuts pauses and hesitations with waveform-walked edges and
+only suggests stutters, retakes and fillers. Shorts reframe 9:16 by speaker (`follow`) or
+stack two speakers (`split`) and hand a draft reel-recut spec over for captions. Cuts reuse
+reel-recut's `cut_timeline.py`. Pipeline routing, project lanes, setup doctor (`--lane
+longform`), CI (numpy) and docs updated.
+
+Validation on a synthetic two-mic podcast: 9 new tests pass; video-qa ran on the outputs.
+The first QA round caught three real defects, all fixed: a hesitation cut leaving 45 ms of
+"um" (cuts now swallow the whole word), a 2 s pause before a laugh never cut (laughs now
+split a gap instead of making the whole gap look non-silent), and a 0.19 s duration drift
+(keeps are now snapped to the render's frame grid inside the planner). A word straddling a
+cut was also kept with a squeezed duration; the time map now drops it. Final QA: long
+master 0 HIGH (remaining MEDIUM = deliberate conversational air), short clean. reel-recut
+rendered captions + banner on the short from the generated spec.
+
+Lessons: a protected region (laugh) must split the gap analysis, not veto it; plan on the
+same frame grid the assembler renders on or every derived timestamp drifts; name speaker
+boxes after the speaker labels or the follow-crop silently has nothing to follow (now an error).

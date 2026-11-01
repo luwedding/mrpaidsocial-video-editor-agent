@@ -19,6 +19,8 @@ every real edit without ever carrying the edit's private details.
   reel-style-clone/        # reference reel → STYLE-GUIDE.md + build directives
   arcads-video-edit/       # multi-take screen+camera+mic demo → EDL base cut → motion-graphics pass
   recap-video/            # event recap: per-line takes, supplied B-roll, split/full layouts, exact assembly
+  long-form-edit/          # long podcast/interview/episode → cleaned 16:9 master + chapters + loudness
+  longform-to-shorts/      # long recording → ranked moments → vertical shorts (speaker-follow/split)
   hook-splitter/           # one long composite of many hooks → N tightened standalone videos
   hook-variations/         # one body × N hooks → N standalone variants (lossless + AVFoundation-verified)
   edits-hook-overlay/      # native IG Edits text typed once (USB iPhone) → exact PNG (difference matte) → burned on N videos, HLG-safe
@@ -41,6 +43,14 @@ tools/video-qa/            # the QA ENGINE: a standalone node package (tsx/zod),
   src/                     #   layer1-technical, layer2-transcript, layer3-semantic, inspect, report,
                            #   manifest/{schema,adapter-hyperframes}, transcribe, gemini, cache, env
   src/__tests__/           #   offline deterministic + real-media regressions; live ASR opt-in
+tools/longform/            # Python + ffmpeg + numpy: long recordings
+  analyze.py              #   one pass → analysis.json: loudness, adaptive gate, silences, nonverbal
+                          #   events (laughs), scene/motion/black, speaker timeline, words, sentences
+  plan_longform.py        #   cut plan: pauses/hesitations (auto), stutters/retakes/fillers (suggested),
+                          #   protected reactions, frame-grid keeps, EDL, QA manifest, chapters draft
+  find_clips.py           #   rank whole-sentence windows for shorts (hook/payoff/energy/reactions…)
+  render.py               #   longform master or 1080x1920 short (follow/split/center/fit) + loudnorm
+  tests/                  #   synthetic two-mic podcast regressions
 tools/editor/              # Python stdlib project state, stage resume and footage library
   editor.py               #   project init/status/resume/checkpoint/render/approve/note/import-review
                           #   catalog ingest/search/annotate/use
@@ -81,6 +91,11 @@ SETUP.md                   # every tool + API with a CHECK and a FIX
   (reference forensics, line selection, B-roll catalog, exact base assembly, source-anchored
   captions/graphics, render/QA and review revisions). Its portable Python assembler writes
   versioned EDL/word maps; it needs Python and ffmpeg/ffprobe, with no new cloud dependency.
+- **A long recording edited whole** (podcast, interview, episode) → `long-form-edit`
+  (`tools/longform`: analyze → plan → render → video-qa → chapters). **Shorts out of it** →
+  `longform-to-shorts` (same analysis → `find_clips.py` shortlist → the agent judges by reading
+  → `render.py short` reframes by speaker → `reel-recut` captions). Cuts reuse reel-recut's
+  `cut_timeline.py` assembler rather than a second renderer.
 - **One long recording of many hooks** → `hook-splitter`; an approved body plus many hooks →
   `hook-variations`; any batch of more than two files → `naming-convention` before delivery.
 - **AI-actor footage that sounds sterile** → `ai-audio-sound-design` (audio-only pass).
@@ -191,7 +206,7 @@ A user's videos usually live in their own working repo, not here. The pattern:
   No libass/drawtext needed anywhere — text goes through PIL PNGs or HTML.
 - **whisper-cli + ggml models** — word-level transcription and VAD for the cut planners
   (`WHISPER_CLI`, `WHISPER_MODEL`, `VAD_BIN`, `VAD_MODEL`).
-- **node >= 20**, **python3** (+ PIL; numpy/scipy for `ai-audio-sound-design`).
+- **node >= 20**, **python3** (+ PIL; numpy for `tools/longform`; numpy/scipy for `ai-audio-sound-design`).
 - **ElevenLabs API** — `ELEVENLABS_API_KEY`; **OpenAI** (optional) — `OPENAI_API_KEY`;
   **Gemini** (optional) — `GEMINI_API_KEY`; **Arcads** (optional) — `ARCADS_BASIC_AUTH` /
   `ARCADS_API_KEY` + workspace ids; **OpenArt MCP** (optional).

@@ -22,6 +22,8 @@ footage + (optional) reference reel + brand/site + ratio
       multi-take screen+camera+mic ─────→ arcads-video-edit
       event recap: takes + B-roll ──────→ recap-video
       one long file of many hooks ──────→ hook-splitter (→ hook-variations)
+      long podcast / interview / episode → long-form-edit (16:9 master + chapters)
+      shorts out of a long recording ───→ longform-to-shorts (→ reel-recut captions)
       AI-actor footage that sounds fake → ai-audio-sound-design
         │
         ▼
@@ -121,7 +123,7 @@ and point it at this pack instead of copying skills into it:
 | ffmpeg / ffprobe | every probe, extract, crop, mux | `brew install ffmpeg` (or your package manager) — no libass/drawtext needed |
 | HyperFrames | composition + rendering engine | `npx hyperframes`; then `npx hyperframes skills update talking-head-recut` (pulls fonts + gsap) |
 | whisper (bundled route) | word-level transcription | `npx hyperframes transcribe` manages whisper.cpp models; `whisper-cli` + a ggml model unlocks the VAD-driven cut planners |
-| python3 | helper scripts | PIL (`pip install pillow`) for overlays; numpy + scipy for `ai-audio-sound-design` |
+| python3 | helper scripts | PIL (`pip install pillow`) for overlays; numpy for `long-form-edit` / `longform-to-shorts`; numpy + scipy for `ai-audio-sound-design` |
 | QA engine | `tools/video-qa` | `npm --prefix tools/video-qa install` (tsx, zod, dotenv) |
 | ElevenLabs API key (sound generation only) | SFX + music + ambience generation | `ELEVENLABS_API_KEY` in `.env`; local/demo/QA workflows do not require it |
 | here-now skill + credentials | canvas review delivery | agent docs at https://here.now/docs (fetch with `User-Agent: claude`); credentials live in `~/.herenow/credentials` |
@@ -147,6 +149,8 @@ HyperFrames, whisper models, or ffmpeg.
 | `reel-style-clone` | Reverse-engineer a reference reel frame by frame into a STYLE-GUIDE.md + build directives. |
 | `arcads-video-edit` | Multi-take screen + camera + mic recordings → an EDL-driven base cut the reviewer locks, then a HyperFrames motion-graphics pass with takeovers, the base video as a character, captions, SFX and music. |
 | [Recap Video](.claude/skills/recap-video/SKILL.md) | Event/conference/travel recap: choose the best take per line, remove pauses and restarts, match supplied B-roll to narration, mix split/full layouts, verify and revise. Includes a portable base-cut assembler. |
+| `long-form-edit` | Long recording (podcast, interview, tutorial) → finished 16:9 master: one audio+picture analysis, waveform-refined pause/hesitation/retake cuts, laughs and reactions protected, chapters, -14 LUFS, QA'd. |
+| `longform-to-shorts` | Long recording → shortlist ranked by hook/payoff/energy/reactions/back-and-forth → the agent judges → each clip tightened and reframed 9:16 (camera follows the speaker, or a two-person split) → reel-recut captions. |
 | `hook-splitter` | One long recording of many hooks/takes → one tightened standalone video per hook, QA'd by re-transcribing the renders, delivered on a gallery canvas with a comment box per video. |
 | `hook-variations` | One approved body × N hooks → N standalone variants, joined losslessly, loudness-matched, verified with AVFoundation (not just ffmpeg). |
 | `edits-hook-overlay` | Instagram's native text hook (Edits font, boxes, anti-aliasing) typed once on a USB iPhone over a black/white plate, lifted as an exact transparent PNG and burned onto any number of videos; HDR phone footage stays untouched. |
@@ -170,6 +174,8 @@ HyperFrames, whisper models, or ffmpeg.
   through the existing public review link. Local mode is not a multi-device review store.
 - Transcription quality tracks your whisper model choice; tiny models miss words that then
   miss captions.
+- Long-form reframing works on ONE wide shot (by speaker boxes you set from a frame); separate
+  multicam files are not synced or switched yet, and there is no face detection.
 - The main build assumes single-subject talking-head source footage; multi-shot sources go
   through `arcads-video-edit` (screen + camera takes), `recap-video` (spoken takes and
   event B-roll), or `hook-splitter` (one long composite) first.

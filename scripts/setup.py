@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Idempotent workspace setup and offline, workflow-specific dependency checks."""
 import argparse
+import importlib.util
 import hashlib
 import os
 from pathlib import Path
@@ -11,7 +12,7 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parent.parent
-LANES = ("local", "demo", "qa", "hyperframes", "sound-design", "all")
+LANES = ("local", "demo", "qa", "hyperframes", "sound-design", "longform", "all")
 
 
 def run(command, **kwargs):
@@ -74,7 +75,9 @@ def doctor(root, lane):
     if lane != "local":
         check(node_ready(), "Node.js 20+", "install Node.js 20 or newer")
         check(shutil.which("npm"), "npm", "install npm with Node.js")
-    if lane in ("demo", "qa", "all"):
+    if lane in ("longform", "all"):
+        check(importlib.util.find_spec("numpy") is not None, "numpy (long-form analysis)", "run python3 -m pip install numpy")
+    if lane in ("demo", "qa", "longform", "all"):
         check(qa_ready(root), "video QA dependencies", "run bash scripts/setup.sh --lane " + lane)
     if lane in ("hyperframes", "all"):
         check(hyperframes_binary(root), "local HyperFrames CLI", "run bash scripts/setup.sh --lane hyperframes")
@@ -140,7 +143,7 @@ def system_packages(lane, dry_run):
 
 
 def install_dependencies(root, lane, dry_run):
-    if lane in ("demo", "qa", "all"):
+    if lane in ("demo", "qa", "longform", "all"):
         qa = root / "tools/video-qa"
         lock = qa / "package-lock.json"
         fingerprint = hashlib.sha256(lock.read_bytes() + (qa / "package.json").read_bytes()).hexdigest()

@@ -8,7 +8,7 @@ import uuid
 from common import changed, fingerprint, locked, now, read_json, resolve, write_json
 
 STAGES = ("ingest", "style", "edit", "sound", "qa", "review")
-LANES = ("branded-ad-edit", "reel-recut", "arcads-video-edit", "recap-video", "hook-splitter", "hook-variations", "ai-audio-sound-design", "talking-head-image-overlays")
+LANES = ("branded-ad-edit", "reel-recut", "arcads-video-edit", "recap-video", "hook-splitter", "hook-variations", "ai-audio-sound-design", "talking-head-image-overlays", "long-form-edit", "longform-to-shorts")
 SKILLS = {"ingest": "video-edit-pipeline", "style": "reel-style-clone", "sound": "sound-design", "qa": "video-qa", "review": "video-review-canvas"}
 
 

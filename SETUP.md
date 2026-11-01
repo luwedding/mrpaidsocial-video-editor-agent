@@ -39,6 +39,7 @@ downloads, API requests, model downloads, or secret values in output.
 | `qa` | Node.js 20+, npm, locked video QA dependencies |
 | `hyperframes` | Node.js 20+, npm, installed HyperFrames CLI |
 | `sound-design` | Node.js 20+, npm, ElevenLabs API key |
+| `longform` | numpy (`python3 -m pip install numpy`), Node.js 20+, npm, locked video QA dependencies; word timestamps from any whisper (whisper-cli `-ojf`, whisperX, OpenAI) |
 | `all` | Everything above; choose only if using all those workflows |
 
 ElevenLabs is required only for generated sound. Gemini, transcription backends,

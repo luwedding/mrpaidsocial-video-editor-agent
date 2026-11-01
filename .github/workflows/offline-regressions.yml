@@ -27,6 +27,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --no-install-recommends -y ffmpeg
+          python3 -m pip install numpy
       - name: Set up local demo dependencies
         run: bash scripts/setup.sh --lane demo
       - name: Check offline doctor and safe rerun
